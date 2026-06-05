@@ -1,0 +1,49 @@
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  gateway:
+    build: ./gateway
+    volumes:
+      - ./gateway:/app          # air watches this for changes
+      - ./shared:/app/shared    # shared code mounted in
+    env_file:
+      - .env                    # injects POSTGRES_USER, JWT_SECRET etc
+    environment:
+      - CONFIG_PATH=/app/shared/config/config.yaml
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - redis
+
+  core:
+    build: ./core
+    volumes:
+      - ./core:/app
+      - ./shared:/app/shared
+    env_file:
+      - .env
+    environment:
+      - CONFIG_PATH=/app/shared/config/config.yaml
+    ports:
+      - "8081:8081"
+    depends_on:
+      - postgres
+      - redis
+
+volumes:
+  postgres_data:
