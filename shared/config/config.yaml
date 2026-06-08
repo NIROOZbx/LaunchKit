@@ -1,0 +1,45 @@
+#services
+
+core:
+  http_addr: ":8081"
+  read_timeout: 10s
+  write_timeout: 10s
+  idle_timeout: 60s
+
+gateway:
+  http_addr: ":8080"
+  read_timeout: 15s
+  write_timeout: 15s
+  idle_timeout: 60s
+
+#logger
+
+log:
+  level: "debug"
+  file: ""
+  max_size_mb: 100
+  max_backups: 3
+  max_age_days: 7
+
+#databases
+
+database:
+  max_open_conns: 50
+  min_open_conns: 25
+  max_idle_conns: 25
+  max_conn_lifetime: "30m"
+  max_idle_time: "5m"
+
+redis:
+  addr: "redis:6379"
+
+#jwt
+jwt:
+ access_expiry_minutes: 15
+ refresh_expiry_hours: 168
+ environment: development
+ frontend_url: "http://localhost:5173"
+
+rate_limit:
+  requests_per_minute: 100
+  burst: 20
