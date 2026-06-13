@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/Lauchkit/LaunchKit/shared/config"
+	"github.com/Launchkit-org/LaunchKit/shared/config"
 	"github.com/redis/go-redis/v9"
 )
 

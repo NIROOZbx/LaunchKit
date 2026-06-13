@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/Lauchkit/LaunchKit/shared/config"
+	"github.com/Launchkit-org/LaunchKit/shared/config"
 	"github.com/natefinch/lumberjack"
 	"github.com/rs/zerolog"
 )

@@ -8,7 +8,7 @@ import (
 	"errors"
 	"io"
 
-	"github.com/Lauchkit/LaunchKit/shared/serializer"
+	"github.com/Launchkit-org/LaunchKit/shared/serializer"
 )
 
 func EncryptMap(data map[string]string, secretKey string) (string, error) {
