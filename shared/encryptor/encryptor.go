@@ -25,7 +25,7 @@ func DecryptToMap(encrypted string, secretKey string) (map[string]string, error)
 		return nil, err
 	}
 	var data map[string]string
-	if err := serializer.UnMarshal(bytes, &data); err != nil {
+	if err := serializer.Unmarshal(bytes, &data); err != nil {
 		return nil, err
 	}
 	return data, nil

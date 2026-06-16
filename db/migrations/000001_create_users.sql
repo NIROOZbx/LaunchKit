@@ -17,6 +17,8 @@ CREATE TABLE users (
     display_name        VARCHAR(100),
     avatar_url          TEXT,
 
+    user_type VARCHAR(20) NOT NULL DEFAULT 'b2c' CHECK (user_type IN ('b2c', 'b2b', 'admin'));
+
     -- Personal B2C Social Identities (For Verification Engines)
     twitter_id          VARCHAR(50)  UNIQUE,
     twitter_handle      VARCHAR(100),

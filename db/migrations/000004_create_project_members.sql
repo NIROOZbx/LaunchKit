@@ -13,7 +13,7 @@ CREATE TABLE project_members (
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
-    CONSTRAINT uq_project_user UNIQUE (project_id, user_id)
+    CONSTRAINT uq_project_user UNIQUE (user_id)
 );
 
 CREATE TRIGGER project_members_updated_at

@@ -1,26 +1,27 @@
 package main
 
 import (
-    "log"
-    "github.com/gofiber/fiber/v3"
-    "github.com/Launchkit-org/LaunchKit/shared/config"
+	"log"
+
+	"github.com/Launchkit-org/LaunchKit/gateway/internal/app"
+	"github.com/Launchkit-org/LaunchKit/shared/config"
+	"github.com/Launchkit-org/LaunchKit/shared/logger"
 )
 
 func main() {
-    cfg, err := config.LoadConfig()
-    if err != nil {
-        log.Fatalf("failed to load config: %v", err)
-    }
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		log.Fatalf("cannot load config: %v", err)
+	}
 
-    app := fiber.New()
+	appLogger := logger.NewLogger(&cfg.Log)
 
-    app.Get("/health", func(c fiber.Ctx) error {
-        return c.JSON(fiber.Map{
-            "status":  "ok",
-            "service": "gateway",
-            "env":     cfg.Gateway.HTTPAddr,
-        })
-    })
+	app, err := app.StartApp(cfg)
+	if err != nil {
+		appLogger.Fatal().Err(err).Msg("cannot start app")
+	}
 
-    app.Listen(cfg.Gateway.HTTPAddr)
+	if err := Run(app, cfg.Gateway.HTTPAddr); err != nil {
+		appLogger.Fatal().Err(err).Msg("cannot run program")
+	}
 }
