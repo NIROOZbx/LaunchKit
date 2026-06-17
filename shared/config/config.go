@@ -32,10 +32,9 @@ type DatabaseConfig struct {
 }
 
 type RedisConfig struct {
-	Addr string `mapstructure:"addr"`
+	Addr     string `mapstructure:"addr"`
 	Password string `mapstructure:"password"`
 }
-
 
 type LogConfig struct {
 	Level      string `mapstructure:"level"`
@@ -55,12 +54,26 @@ type JwtConfig struct {
 }
 
 type Config struct {
-	Core     ServerConfig   `mapstructure:"core"`
-	Gateway  ServerConfig   `mapstructure:"gateway"`
-	Log      LogConfig      `mapstructure:"log"`
-	Database DatabaseConfig `mapstructure:"database"`
-	Redis    RedisConfig    `mapstructure:"redis"`
-	Jwt     JwtConfig   `mapstructure:"jwt"`
+	Core      ServerConfig    `mapstructure:"core"`
+	Gateway   ServerConfig    `mapstructure:"gateway"`
+	Log       LogConfig       `mapstructure:"log"`
+	Database  DatabaseConfig  `mapstructure:"database"`
+	Redis     RedisConfig     `mapstructure:"redis"`
+	Jwt       JwtConfig       `mapstructure:"jwt"`
+	RateLimit RateLimitConfig `mapstructure:"rate_limit"`
+	Cors      CORSConfig      `mapstructure:"cors"`
+}
+
+type RateLimitConfig struct {
+	RequestsPerMinute       int `mapstructure:"requests_per_minute"`
+	AuthRequestsPerMinute   int `mapstructure:"auth_requests_per_minute"`
+	PublicRequestsPerMinute int `mapstructure:"public_requests_per_minute"`
+}
+
+type CORSConfig struct {
+	AllowedOrigins []string `mapstructure:"allowed_origins"`
+	AllowedHeaders []string `mapstructure:"allowed_headers"`
+	AllowedMethods []string `mapstructure:"allowed_methods"`
 }
 
 func LoadConfig() (*Config, error) {
@@ -81,7 +94,7 @@ func LoadConfig() (*Config, error) {
 	v.BindEnv("database.name", "POSTGRES_DB")
 
 	v.BindEnv("redis.addr", "REDIS_ADDR")
-	v.BindEnv("redis.password","REDIS_PASSWORD")
+	v.BindEnv("redis.password", "REDIS_PASSWORD")
 
 	v.BindEnv("jwt.access_token_secret", "ACCESS_SECRET")
 	v.BindEnv("jwt.refresh_token_secret", "REFRESH_SECRET")
@@ -116,12 +129,12 @@ func validate(cfg *Config) error {
 		value string
 		name  string
 	}{
-		{cfg.Database.User,     "POSTGRES_USER"},
+		{cfg.Database.User, "POSTGRES_USER"},
 		{cfg.Database.Password, "POSTGRES_PASSWORD"},
-		{cfg.Database.Host,     "POSTGRES_HOST"},
-		{cfg.Database.Name,     "POSTGRES_DB"},
-		{cfg.Database.Port,     "POSTGRES_PORT"},
-		{cfg.Redis.Addr,        "REDIS_ADDR"},
+		{cfg.Database.Host, "POSTGRES_HOST"},
+		{cfg.Database.Name, "POSTGRES_DB"},
+		{cfg.Database.Port, "POSTGRES_PORT"},
+		{cfg.Redis.Addr, "REDIS_ADDR"},
 		// {cfg.Redis.Password,        "REDIS_PASSWORD"},
 		{cfg.Jwt.AccessTokenSecret, "ACCESS_SECRET"},
 		{cfg.Jwt.RefreshTokenSecret, "REFRESH_SECRET"},
