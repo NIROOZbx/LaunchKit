@@ -36,6 +36,14 @@ func BadRequest(c fiber.Ctx, message string, data any) error {
 	})
 }
 
+func TooManyRequests(c fiber.Ctx, message string) error {
+	return c.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{
+		"success": false,
+		"data":    nil,
+		"error":   message,
+	})
+}
+
 func InternalServerError(c fiber.Ctx) error {
 	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 		"success": false,
