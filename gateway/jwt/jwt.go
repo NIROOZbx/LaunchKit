@@ -11,11 +11,11 @@ import (
 )
 
 type TokenPayload struct {
-	UserID      string
-	Role        string
-	WorkspaceID string
-	Version     int64
-	IsOnboarded bool
+	UserID        string
+	WalletAddress string
+	Role          string
+	ProjectID     string
+	IsOnboarded   bool
 }
 
 type TokenPair struct {
@@ -25,11 +25,11 @@ type TokenPair struct {
 }
 
 type AccessClaims struct {
-	UserID      string `json:"uid"`
-	WorkspaceID string `json:"wid"`
-	Role        string `json:"role"`
-	Version     int64  `json:"ver"`
-	IsOnboarded bool   `json:"onboarded"`
+	UserID        string `json:"uid"`
+	WalletAddress string `json:"wallet"`
+	Role          string `json:"role"`
+	ProjectID     string `json:"pid,omitempty"`
+	IsOnboarded   bool   `json:"onboarded"`
 	jwt.RegisteredClaims
 }
 
@@ -52,11 +52,11 @@ func GenerateTokenPair(payload TokenPayload, cfg Config) (*TokenPair, error) {
 
 	accessExpiry := time.Duration(cfg.AccessExpiryMinutes) * time.Minute
 	accessClaims := &AccessClaims{
-		UserID:      payload.UserID,
-		Role:        payload.Role,
-		Version:     payload.Version,
-		WorkspaceID: payload.WorkspaceID,
-		IsOnboarded: payload.IsOnboarded,
+		UserID:        payload.UserID,
+		WalletAddress: payload.WalletAddress,
+		Role:          payload.Role,
+		ProjectID:     payload.ProjectID,
+		IsOnboarded:   payload.IsOnboarded,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(accessExpiry)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
