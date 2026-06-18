@@ -1,10 +1,5 @@
-#services
-
 core:
-  http_addr: ":8081"
-  read_timeout: 10s
-  write_timeout: 10s
-  idle_timeout: 60s
+  grpc_addr: ":50051"
 
 gateway:
   http_addr: ":8080"

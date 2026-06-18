@@ -54,8 +54,12 @@ type JwtConfig struct {
 	FrontendURL         string `mapstructure:"frontend_url"`
 }
 
+type GRPCConfig struct {
+	GRPCAddr string `mapstructure:"grpc_addr"`
+}
+
 type Config struct {
-	Core      ServerConfig    `mapstructure:"core"`
+	Core      GRPCConfig      `mapstructure:"core"`
 	Gateway   ServerConfig    `mapstructure:"gateway"`
 	Log       LogConfig       `mapstructure:"log"`
 	Database  DatabaseConfig  `mapstructure:"database"`

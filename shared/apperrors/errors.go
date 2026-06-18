@@ -9,4 +9,5 @@ var (
 	ErrValidation    = errors.New("validation error")
 	ErrInternal      = errors.New("internal server error")
 	ErrConflict      = errors.New("conflict")
+	ErrRefreshLockHeld = errors.New("refresh lock held: another request is already processing a refresh")
 )

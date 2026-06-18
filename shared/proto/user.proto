@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+package auth.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/Launchkit-org/LaunchKit/shared/proto/auth/v1;authv1";
+
+service UserService {
+    rpc CreateUser(CreateUserRequest) returns (UserResponse);
+    rpc GetUser(GetUserRequest) returns (UserResponse);
+    rpc GetUserWallet(GetUserByWalletRequest) returns (UserResponse);
+    rpc UpdateUser(UpdateUserRequest) returns (UserResponse);
+}
+
+message User {
+    string id = 1;
+    string wallet_address = 2;
+    string ens_name = 3;
+    string display_name = 4;
+    string avatar_url = 5;
+    string user_type = 6; // 'b2c', 'b2b', 'admin'
+
+    string project_id = 15;
+    string project_role = 16;
+    
+    // Social identities
+    string twitter_id = 7;
+    string twitter_handle = 8;
+    string discord_id = 9;
+    string discord_handle = 10;
+    string discord_token = 11;
+    
+    // Timestamps
+    google.protobuf.Timestamp created_at = 12;
+    google.protobuf.Timestamp updated_at = 13;
+    google.protobuf.Timestamp last_seen = 14;
+}
+
+message CreateUserRequest {
+    string wallet_address = 1;
+    string ens_name = 2;
+    string display_name = 3;
+    string avatar_url = 4;
+    string user_type = 5;
+}
+
+message GetUserRequest {
+    string id = 1;
+}
+
+message GetUserByWalletRequest {
+    string wallet_address = 1;
+}
+
+message UpdateUserRequest {
+    string id = 1;
+    string display_name = 2;
+    string avatar_url = 3;
+    string twitter_id = 4;
+    string twitter_handle = 5;
+    string discord_id = 6;
+    string discord_handle = 7;
+    string discord_token = 8;
+}
+
+message UserResponse {
+    User user = 1;
+}

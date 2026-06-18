@@ -1,15 +1,14 @@
 package middleware
 
 import (
-	"slices"
 	"errors"
 	"fmt"
+	"slices"
 	"time"
 
-	db "github.com/Launchkit-org/LaunchKit/db/sqlc"
 	"github.com/Launchkit-org/LaunchKit/gateway/consts"
+	"github.com/Launchkit-org/LaunchKit/gateway/internal/domain"
 	"github.com/Launchkit-org/LaunchKit/gateway/internal/sessions"
-	"github.com/Launchkit-org/LaunchKit/gateway/internal/utils"
 	"github.com/Launchkit-org/LaunchKit/gateway/jwt"
 	"github.com/Launchkit-org/LaunchKit/shared/apperrors"
 	"github.com/Launchkit-org/LaunchKit/shared/config"
@@ -22,7 +21,7 @@ import (
 type authMiddleware struct {
 	cfg   *config.JwtConfig
 	log   zerolog.Logger
-	repo  *db.Queries
+	repo  domain.CoreClient
 	store sessions.Store
 }
 
@@ -32,7 +31,7 @@ type AuthMiddleware interface {
 	RequireRole(allowedRoles ...string) fiber.Handler
 }
 
-func NewMiddleware(store sessions.Store, cfg *config.JwtConfig, log zerolog.Logger, repo *db.Queries) AuthMiddleware {
+func NewMiddleware(store sessions.Store, cfg *config.JwtConfig, log zerolog.Logger, repo domain.CoreClient) AuthMiddleware {
 	return &authMiddleware{
 		store: store,
 		cfg:   cfg,
@@ -49,15 +48,11 @@ func (a *authMiddleware) Auth(c fiber.Ctx) error {
 		a.log.Warn().Err(err).Msg("authentication failed: invalid or missing token")
 		return response.Unauthorized(c, apperrors.ErrForbidden.Error())
 	}
-	if !claims.IsOnboarded {
-		a.log.Info().Str("userID", claims.UserID).Msg("authentication successful but onboarding required")
+	if claims.Role == "b2b" && !claims.IsOnboarded {
+		a.log.Info().Str("userID", claims.UserID).Msg("workspace setup required for B2B user")
 		return response.Forbidden(c, "workspace setup required", nil)
 	}
-	userID, err := utils.StringToUUID(claims.UserID)
-	if err != nil {
-		return response.InternalServerError(c)
-	}
-	c.Locals(consts.UID, userID)
+	c.Locals(consts.UID, claims.UserID)
 	c.Locals(consts.PRID, claims.ProjectID)
 	c.Locals(consts.Role, claims.Role)
 
@@ -82,11 +77,7 @@ func (a *authMiddleware) OnboardingAuth(c fiber.Ctx) error {
 		a.log.Info().Str("userID", claims.UserID).Msg("onboarding auth attempt for already onboarded user")
 		return response.Forbidden(c, "already onboarded", nil)
 	}
-	userID, err := utils.StringToUUID(claims.UserID)
-	if err != nil {
-		return response.InternalServerError(c)
-	}
-	c.Locals(consts.UID, userID)
+	c.Locals(consts.UID, claims.UserID)
 	c.Locals(consts.Role, claims.Role)
 
 	return c.Next()
@@ -145,51 +136,38 @@ func (a *authMiddleware) silentRefresh(c fiber.Ctx) (*jwt.AccessClaims, error) {
 		return nil, apperrors.ErrUnauthorized
 	}
 
-	userID, err := utils.StringToUUID(refreshClaims.UserID)
-	if err != nil {
-		return nil, apperrors.ErrUnauthorized
-	}
-	User, err := a.repo.GetUserByID(c.Context(), userID)
+	userID := refreshClaims.UserID
+
+	User, err := a.repo.GetUser(c.Context(), userID)
 	if err != nil {
 		a.log.Error().Err(err).Str("userID", refreshClaims.UserID).Msg("failed to fetch user  from DB")
 		return nil, apperrors.ErrUnauthorized
 	}
 
-	blacklistedAt, err := a.store.IsRefreshBlacklisted(c.Context(), refreshClaims.TokenID)
+	alreadyClaimed, err := a.store.ClaimRefreshToken(c.Context(), refreshClaims.TokenID, 30*time.Second)
+
 	if err != nil {
-		a.log.Error().Err(err).Str("userID", refreshClaims.UserID).Msg("redis down during blacklist check")
+		a.log.Error().Err(err).Str("userID", refreshClaims.UserID).Msg("redis down during token claim")
 		return nil, apperrors.ErrInternal
 	}
 
-	if !blacklistedAt.IsZero() && time.Since(blacklistedAt) <= graceperiod {
-		a.log.Warn().Str("userID", refreshClaims.UserID).Str("tokenID", refreshClaims.TokenID).Msg("refresh token is blacklisted")
-		a.store.UpgradeTokenVersion(c.Context(), refreshClaims.UserID)
-		jwt.ClearTokenCookies(c)
-		return nil, apperrors.ErrUnauthorized
+	if alreadyClaimed {
+		a.log.Debug().Str("tokenID", refreshClaims.TokenID).Msg("token already claimed by another request")
+		return nil, apperrors.ErrRefreshLockHeld
 	}
-	if err := a.store.BlackListRefreshtoken(c.Context(), refreshClaims.TokenID, refreshClaims.IssuedAt.Time); err != nil {
-		a.log.Error().Err(err).Str("userID", refreshClaims.UserID).Msg("failed to blacklist token")
-	}
+
 	newVer, err := a.store.GetTokenVersion(c.Context(), refreshClaims.UserID)
 	if err != nil {
 		a.log.Error().Err(err).Str("userID", refreshClaims.UserID).Msg("failed to fetch token version during silent refresh")
 	}
-	isOnboarded := User.DisplayName.Valid && User.AvatarUrl.Valid
-
-	role := User.UserType
-	projectID := ""
-
-	membership, err := a.repo.GetProjectMembership(c.Context(), userID)
-	if err == nil {
-		projectID = membership.ProjectID.String()
-	}
+	isOnboarded := domain.IsUserOnboarded(User)
 
 	payload := &jwt.TokenPayload{
 		UserID:        refreshClaims.UserID,
 		WalletAddress: User.WalletAddress,
-		Role:          role,
-		ProjectID:     projectID,
-		ProjectRole:   membership.Role,
+		Role:          User.UserType,
+		ProjectID:     User.ProjectId,
+		ProjectRole:   User.ProjectRole,
 		IsOnboarded:   isOnboarded,
 		Version:       newVer,
 	}
@@ -200,18 +178,13 @@ func (a *authMiddleware) silentRefresh(c fiber.Ctx) (*jwt.AccessClaims, error) {
 		a.log.Error().Err(err).Str("userID", refreshClaims.UserID).Msg("failed to generate token pair during silent refresh")
 		return nil, err
 	}
-	expiry := time.Duration(a.cfg.RefreshExpiryHours) * time.Hour
-	if err := a.store.StoreRefreshToken(c.Context(), pair.TokenID, refreshClaims.UserID, expiry); err != nil {
-		a.log.Error().Err(err).Str("userID", refreshClaims.UserID).Msg("failed to store new refresh token")
-
-	}
 	isProd := a.cfg.Environment == "production"
 
 	jwt.SetTokenCookies(c, pair, a.cfg.AccessExpiryMinutes, a.cfg.RefreshExpiryHours, isProd)
 
 	a.log.Info().
 		Str("userID", refreshClaims.UserID).
-		Str("ProjectID", membership.ProjectID.String()).
+		Str("ProjectID", User.ProjectId).
 		Msg("tokens issued successfully during silent refresh")
 
 	return jwt.ParseAccessToken(pair.AccessToken, []byte(a.cfg.AccessTokenSecret))
@@ -225,11 +198,13 @@ func (a *authMiddleware) RequireRole(allowedRoles ...string) fiber.Handler {
 			a.log.Warn().Msg("role middleware: role not found in context")
 			return response.Forbidden(c, "role not found", nil)
 		}
-		if slices.Contains(allowedRoles, role) { return c.Next() }
+		if slices.Contains(allowedRoles, role) {
+			return c.Next()
+		}
 		a.log.Warn().
 			Str("userRole", role).
 			Interface("allowedRoles", allowedRoles).
 			Msg("role middleware: insufficient permissions")
-		return response.Forbidden(c, "insufficient permissions",nil)
+		return response.Forbidden(c, "insufficient permissions", nil)
 	}
 }

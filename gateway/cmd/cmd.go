@@ -56,6 +56,12 @@ func shutdown(a *app.App, ctx context.Context) error {
 		a.Logger.Error().Err(err).Msg("redis close error")
 	}
 
+	if a.CoreClient != nil {
+		if err := a.CoreClient.Close(); err != nil {
+			a.Logger.Error().Err(err).Msg("core client close error")
+		}
+	}
+
 	a.Logger.Info().Msg("shutdown complete")
 
 	return nil

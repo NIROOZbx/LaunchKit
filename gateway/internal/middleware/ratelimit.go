@@ -37,8 +37,7 @@ func IdentifierFromIP(c fiber.Ctx) (string, error) {
 }
 
 // IdentifierFromUser pulls the authenticated identity set by the JWT
-// middleware. CONFIRM the locals key name with whoever wires JWT
-// validation (P2) — "user_id" is a placeholder.
+// middleware.
 func IdentifierFromUser(c fiber.Ctx) (string, error) {
 	v := c.Locals("user_id")
 	id, ok := v.(string)
