@@ -5,7 +5,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/Launchkit-org/LaunchKit/gateway/jwt"
 	"github.com/spf13/viper"
 )
 
@@ -147,13 +146,4 @@ func validate(cfg *Config) error {
 		}
 	}
 	return nil
-}
-
-func (a *JwtConfig) ToJWTConfig() jwt.Config {
-	return jwt.Config{
-		AccessTokenSecret:   a.AccessTokenSecret,
-		RefreshTokenSecret:  a.RefreshTokenSecret,
-		AccessExpiryMinutes: a.AccessExpiryMinutes,
-		RefreshExpiryHours:  a.RefreshExpiryHours,
-	}
 }

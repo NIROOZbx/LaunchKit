@@ -26,9 +26,12 @@ services:
     volumes:
       - ./core:/launchkit/core
       - ./shared:/launchkit/shared
+      - ./db:/launchkit/db
     working_dir: /launchkit/core
     environment:
       - CONFIG_PATH=/launchkit/shared/config/config.yaml
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
     env_file:
       - .env
     ports:
@@ -64,7 +67,7 @@ services:
     ports:
       - "5433:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
 
   redis:
     image: redis:8-alpine

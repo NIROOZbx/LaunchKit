@@ -64,10 +64,10 @@ tasks:
     desc: Full boot sequence (Infra -> Migrate -> Logs)
     cmds:
       - task: up
-      - echo "⏳ Waiting for database to initialize..."
+      - echo "Waiting for database to initialize..."
       - task: migrate-up
-      - echo "🚀 System live. Tailing backend logs..."
-      - "{{.COMPOSE_CMD}} logs -f backend"
+      - echo "System live. Tailing backend logs..."
+      - "{{.COMPOSE_CMD}} logs -f core gateway"
 
   tidy:
     desc: Run go mod tidy on a specific module or all. Usage - task tidy -- [core|db|gateway|shared]
