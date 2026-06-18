@@ -4,6 +4,7 @@ WORKDIR /launchkit
 RUN go install github.com/air-verse/air@latest
 
 COPY shared/ ./shared/
+COPY db/ ./db/
 COPY gateway/go.mod gateway/go.sum ./gateway/
 
 WORKDIR /launchkit/gateway

@@ -30,6 +30,8 @@ services:
     working_dir: /launchkit/core
     environment:
       - CONFIG_PATH=/launchkit/shared/config/config.yaml
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
     env_file:
       - .env
     ports:

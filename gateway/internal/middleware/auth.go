@@ -1,9 +1,9 @@
 package middleware
 
 import (
-	"slices"
 	"errors"
 	"fmt"
+	"slices"
 	"time"
 
 	db "github.com/Launchkit-org/LaunchKit/db/sqlc"
@@ -193,7 +193,13 @@ func (a *authMiddleware) silentRefresh(c fiber.Ctx) (*jwt.AccessClaims, error) {
 		IsOnboarded:   isOnboarded,
 		Version:       newVer,
 	}
-	jwtConfig := a.cfg.ToJWTConfig()
+
+	jwtConfig := jwt.Config{
+		AccessTokenSecret:   a.cfg.AccessTokenSecret,
+		RefreshTokenSecret:  a.cfg.RefreshTokenSecret,
+		AccessExpiryMinutes: a.cfg.AccessExpiryMinutes,
+		RefreshExpiryHours:  a.cfg.RefreshExpiryHours,
+	}
 
 	pair, err := jwt.GenerateTokenPair(*payload, jwtConfig)
 	if err != nil {
@@ -225,11 +231,13 @@ func (a *authMiddleware) RequireRole(allowedRoles ...string) fiber.Handler {
 			a.log.Warn().Msg("role middleware: role not found in context")
 			return response.Forbidden(c, "role not found", nil)
 		}
-		if slices.Contains(allowedRoles, role) { return c.Next() }
+		if slices.Contains(allowedRoles, role) {
+			return c.Next()
+		}
 		a.log.Warn().
 			Str("userRole", role).
 			Interface("allowedRoles", allowedRoles).
 			Msg("role middleware: insufficient permissions")
-		return response.Forbidden(c, "insufficient permissions",nil)
+		return response.Forbidden(c, "insufficient permissions", nil)
 	}
 }
