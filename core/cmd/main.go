@@ -1,18 +1,24 @@
 package main
 
 import (
-	"github.com/gofiber/fiber/v3"
+	"log"
+
+	"github.com/Launchkit-org/LaunchKit/core/internal/app"
+	"github.com/Launchkit-org/LaunchKit/shared/config"
 )
 
 func main() {
-	app := fiber.New()
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		log.Fatalf("cannot load config: %v", err)
+	}
 
-	app.Get("/health", func(c fiber.Ctx) error {
-		return c.JSON(fiber.Map{
-			"status":  "ok",
-			"service": "core",
-		})
-	})
+	a, err := app.StartApp(cfg)
+	if err != nil {
+		log.Fatalf("cannot start app: %v", err)
+	}
 
-	app.Listen(":8081")
+	if err := Run(a); err != nil {
+		a.Logger.Fatal().Err(err).Msg("core service exited with error")
+	}
 }
