@@ -6,7 +6,7 @@ import (
 
 	"github.com/Launchkit-org/LaunchKit/gateway/consts"
 	"github.com/Launchkit-org/LaunchKit/gateway/internal/domain"
-	"github.com/Launchkit-org/LaunchKit/gateway/internal/dtos"
+	"github.com/Launchkit-org/LaunchKit/gateway/internal/models"
 	"github.com/Launchkit-org/LaunchKit/gateway/jwt"
 	"github.com/Launchkit-org/LaunchKit/shared/apperrors"
 	"github.com/Launchkit-org/LaunchKit/shared/config"
@@ -30,7 +30,7 @@ func NewAuthHandler(authService domain.AuthService, logger zerolog.Logger, jwtCf
 }
 
 func (h *AuthHandler) GetNonce(c fiber.Ctx) error {
-	var query dtos.NonceRequest
+	var query models.NonceRequest
 	if err := c.Bind().Query(&query); err != nil {
 		return response.BadRequest(c, "invalid query parameters", nil)
 	}
@@ -41,14 +41,14 @@ func (h *AuthHandler) GetNonce(c fiber.Ctx) error {
 		return response.InternalServerError(c)
 	}
 
-	return response.OK(c, "Nonce fetched successfully", dtos.NonceResponse{
+	return response.OK(c, "Nonce fetched successfully", models.NonceResponse{
 		Nonce:   nonce,
 		Message: siweMsg,
 	})
 }
 
 func (h *AuthHandler) Verify(c fiber.Ctx) error {
-	payload := new(dtos.VerifyRequest)
+	payload := new(models.VerifyRequest)
 	if err := c.Bind().Body(payload); err != nil {
 		return response.BadRequest(c, "invalid request body", nil)
 	}

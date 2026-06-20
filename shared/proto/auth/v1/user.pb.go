@@ -362,6 +362,7 @@ type UpdateUserRequest struct {
 	DiscordId     string                 `protobuf:"bytes,6,opt,name=discord_id,json=discordId,proto3" json:"discord_id,omitempty"`
 	DiscordHandle string                 `protobuf:"bytes,7,opt,name=discord_handle,json=discordHandle,proto3" json:"discord_handle,omitempty"`
 	DiscordToken  string                 `protobuf:"bytes,8,opt,name=discord_token,json=discordToken,proto3" json:"discord_token,omitempty"`
+	EnsName       string                 `protobuf:"bytes,9,opt,name=ens_name,json=ensName,proto3" json:"ens_name,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -452,6 +453,13 @@ func (x *UpdateUserRequest) GetDiscordToken() string {
 	return ""
 }
 
+func (x *UpdateUserRequest) GetEnsName() string {
+	if x != nil {
+		return x.EnsName
+	}
+	return ""
+}
+
 type UserResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	User          *User                  `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
@@ -536,7 +544,7 @@ const file_user_proto_rawDesc = "" +
 	"\x0eGetUserRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"?\n" +
 	"\x16GetUserByWalletRequest\x12%\n" +
-	"\x0ewallet_address\x18\x01 \x01(\tR\rwalletAddress\"\x96\x02\n" +
+	"\x0ewallet_address\x18\x01 \x01(\tR\rwalletAddress\"\xb1\x02\n" +
 	"\x11UpdateUserRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12!\n" +
 	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName\x12\x1d\n" +
@@ -548,7 +556,8 @@ const file_user_proto_rawDesc = "" +
 	"\n" +
 	"discord_id\x18\x06 \x01(\tR\tdiscordId\x12%\n" +
 	"\x0ediscord_handle\x18\a \x01(\tR\rdiscordHandle\x12#\n" +
-	"\rdiscord_token\x18\b \x01(\tR\fdiscordToken\"1\n" +
+	"\rdiscord_token\x18\b \x01(\tR\fdiscordToken\x12\x19\n" +
+	"\bens_name\x18\t \x01(\tR\aensName\"1\n" +
 	"\fUserResponse\x12!\n" +
 	"\x04user\x18\x01 \x01(\v2\r.auth.v1.UserR\x04user2\x93\x02\n" +
 	"\vUserService\x12?\n" +

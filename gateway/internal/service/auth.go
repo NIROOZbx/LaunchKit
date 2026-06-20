@@ -8,7 +8,7 @@ import (
 
 	"github.com/Launchkit-org/LaunchKit/gateway/internal/constants"
 	"github.com/Launchkit-org/LaunchKit/gateway/internal/domain"
-	"github.com/Launchkit-org/LaunchKit/gateway/internal/dtos"
+	"github.com/Launchkit-org/LaunchKit/gateway/internal/models"
 	"github.com/Launchkit-org/LaunchKit/gateway/internal/sessions"
 	"github.com/Launchkit-org/LaunchKit/gateway/jwt"
 	"github.com/Launchkit-org/LaunchKit/shared/apperrors"
@@ -61,7 +61,7 @@ func (s *authService) GetNonce(ctx context.Context, walletAddress string) (strin
 	return nonce, siweMsg.String(), nil
 }
 
-func (s *authService) Verify(ctx context.Context, message, signature string, userType string) (*dtos.UserResponse, *jwt.TokenPayload, error) {
+func (s *authService) Verify(ctx context.Context, message, signature string, userType string) (*models.UserResponse, *jwt.TokenPayload, error) {
 	siweMessage, err := siwe.ParseMessage(message)
 	if err != nil {
 		return nil, nil, fmt.Errorf("authService.Verify: parse message: %w", err)
@@ -108,7 +108,7 @@ func (s *authService) Verify(ctx context.Context, message, signature string, use
 
 	isOnboarded := domain.IsUserOnboarded(user)
 
-	userResponse := &dtos.UserResponse{
+	userResponse := &models.UserResponse{
 		ID:            user.Id,
 		WalletAddress: user.WalletAddress,
 		EnsName:       user.EnsName,

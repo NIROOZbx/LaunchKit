@@ -5,9 +5,11 @@ go 1.26.4
 require (
 	github.com/Launchkit-org/LaunchKit/db v0.0.0-00010101000000-000000000000
 	github.com/Launchkit-org/LaunchKit/shared v0.0.0-00010101000000-000000000000
+	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.10.0
 	github.com/rs/zerolog v1.35.1
 	google.golang.org/grpc v1.81.1
+	google.golang.org/protobuf v1.36.11
 )
 
 require (
@@ -33,7 +35,6 @@ require (
 	golang.org/x/sys v0.45.0 // indirect
 	golang.org/x/text v0.37.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260226221140-a57be14db171 // indirect
-	google.golang.org/protobuf v1.36.11 // indirect
 )
 
 replace github.com/Launchkit-org/LaunchKit/shared => ../shared

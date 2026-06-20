@@ -62,6 +62,7 @@ message UpdateUserRequest {
     string discord_id = 6;
     string discord_handle = 7;
     string discord_token = 8;
+    string ens_name = 9;
 }
 
 message UserResponse {
